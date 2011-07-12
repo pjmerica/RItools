@@ -5,9 +5,12 @@ xBalance.make.stratwts <- function(stratum.weights,ss.df,goodstrat.df,zz,data,no
     swt.ls <- rep(list(stratum.weights), length(ss.df))
     names(swt.ls) <- names(ss.df)
   }
-  if (is.list(stratum.weights) & !all(names(ss.df)%in%names(stratum.weights)))
-    stop("list stratum.weights must have entry names matching those of stratifying factors")
+  if (is.list(stratum.weights)) {
 
+    if (!all(names(ss.df)%in%names(stratum.weights)))
+      stop("list stratum.weights must have entry names matching those of stratifying factors")
+swt.ls <- stratum.weights
+  }
   if (!is.list(stratum.weights) & !is.function(stratum.weights) & length(ss.df)>1) stop("stratum weights must be specified for each stratifying factor")
 
   if (!is.list(stratum.weights) & !is.function(stratum.weights)) {
