@@ -31,7 +31,7 @@ xtable.xbal <- function(x,caption = NULL, label = NULL, align =c("l",rep("r",nco
         roundfn <-
           function(x) as.numeric(format(x, digits=max(1,digits[byrow.rounding][1])))
 
-        xvardf[byrow.rounding] <- apply(xvardf[byrow.rounding],1,roundfn)
+        xvardf[byrow.rounding] <- t(apply(xvardf[byrow.rounding],1,roundfn))
                                                 
         digits[byrow.rounding] <- digits[byrow.rounding] + 2
     }
