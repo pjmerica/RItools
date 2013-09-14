@@ -69,3 +69,40 @@ test_that("Select a subset of xbal results (for printing, etc)", {
 
 })
 
+test_that("xtable method handles column labels, fields with sigfig rounding across rows",{
+  data(nuclearplants)
+  xb0 <- xBalance(pr~ date + t1 + t2 + cap + ne + cum.n, data=nuclearplants)
+  expect_true(inherits(
+                       xtable(xb0, digits=1)#
+                       ,"xtable")
+              )
+  expect_true(inherits(
+                       xtable(xb0, digits=1, col.labels=c("std.diff"="standard diff"))#
+                       ,"xtable")
+              )
+  
+  xb1 <- xBalance(pr~ date + t1 + t2 + cap + ne + cum.n, data=nuclearplants,
+              report=c("all"))
+  expect_true(inherits(
+                       xtable(xb1, digits=1)#
+                       ,"xtable")
+              )
+  expect_true(!any(names(xtable(xb1, digits=1,
+                                     col.labels=c("adj.diff"="adjusted diff"))
+                         )=="adj.diff")
+              )
+
+  xb2 <-      xBalance(pr~ date + t1 + t2 + cap + ne + cum.n,
+              strata=list(unstrat=NULL, pt=~pt),
+              data=nuclearplants,
+              report=c("adj.means", "adj.mean.diffs", "std.diffs") )
+  expect_true(inherits(
+                       xtable(xb2, digits=1)#
+                       ,"xtable")
+              )
+  expect_true(!any(names(xtable(xb2, digits=1,
+                                     col.labels=c("adj.diff"="adjusted diff"))
+                         )=="adj.diff")
+              )
+
+})

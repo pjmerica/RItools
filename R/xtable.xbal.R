@@ -18,10 +18,47 @@ xtable.xbal <- function(x,caption = NULL, label = NULL, align =c("l",rep("r",nco
     numstrata<-dim(x$results)[3]
     latex.annotation <- attr(xprint, "latex.annotation")
     xvardf<-xprint$vartable
-    
-    if(!is.null(col.labels)) names(xvardf) <- col.labels
 
+    byrow.rounding <- c(grep("Z=0", names(xvardf)),
+                        grep("Z=1", names(xvardf)),
+                        grep("adj.diff$", names(xvardf))
+                        )
+    byrow.rounding <- sort(unique(byrow.rounding))
+    if (length(byrow.rounding))
+      {
+        digits <- if (length(digits)>1)
+          c(digits[1],rep_len(digits[-1], ncol(xvardf))) else rep_len(digits, ncol(xvardf)+1)
+        roundfn <-
+          function(x) as.numeric(format(x, digits=max(1,digits[byrow.rounding][1])))
 
+        xvardf[byrow.rounding] <- apply(xvardf[byrow.rounding],1,roundfn)
+                                                
+        digits[byrow.rounding] <- digits[byrow.rounding] + 2
+    }
+    if (is.null(display)) {
+        display <- rep("fg", ncol(xvardf))
+        display[sapply(xvardf, is.character) | sapply(xvardf, is.factor) ] <- "s"
+        display[byrow.rounding] <- "g"
+        display <- c("s", display)
+    }
+        clabs <- names(xvardf)
+
+    if (!is.null(col.labels))
+      {
+        stopifnot(length(col.labels)<=length(clabs), #replace w/ more informative version
+                  is.character(col.labels))
+        
+        if (!is.null(names(col.labels)))
+          {
+            names(clabs) <- clabs
+            col.labels <- col.labels[names(col.labels)%in%names(clabs)]
+            for (clnm in names(col.labels))
+              clabs[names(clabs)==clnm] <- col.labels[clnm]
+      } else if (length(col.labels)) {
+        clabs[1L:length(col.labels)] <- col.labels
+      }
+      } 
+            names(xvardf) <- clabs
     ##call xtable on the resulting data.frame
     vartab <- xtable(xvardf,caption=caption, label=label, digits=digits,align=align,display=display,col.labels=col.labels,...) ##NextMethod("xtable",xvardf)
     structure(vartab,
