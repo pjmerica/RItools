@@ -19,26 +19,30 @@ xtable.xbal <- function(x,caption = NULL, label = NULL, align =c("l",rep("r",nco
     latex.annotation <- attr(xprint, "latex.annotation")
     xvardf<-xprint$vartable
 
-    byrow.rounding <- c(grep("Z=0", names(xvardf)),
-                        grep("Z=1", names(xvardf)),
-                        grep("adj.diff$", names(xvardf))
+    byrow.rounding <- c(grep("=0$", names(xvardf)),
+                        grep("=1$", names(xvardf)),
+                        grep("adj.diff", names(xvardf))
                         )
     byrow.rounding <- sort(unique(byrow.rounding))
     if (length(byrow.rounding))
       {
-        digits <- if (length(digits)>1)
-          c(digits[1],rep_len(digits[-1], ncol(xvardf))) else rep_len(digits, ncol(xvardf)+1)
-        roundfn <-
-          function(x) as.numeric(format(x, digits=max(1,digits[byrow.rounding][1])))
+        byrow.rounding.digits <- if (length(digits)>1)
+          c(digits[1],rep_len(digits[-1], ncol(xvardf)))[byrow.rounding[1]] else digits
+        roundfn <- function(x)
+            {
+              thedigits <- floor(-log10(min(abs(x))))+byrow.rounding.digits
+              format(round(x, digits=thedigits))
+          }
 
-        xvardf[byrow.rounding] <- t(apply(xvardf[byrow.rounding],1,roundfn))
+        xvardf[byrow.rounding] <- if (length(byrow.rounding)>1) {
+          t(apply(xvardf[byrow.rounding],1,roundfn))
+        } else signif(xvardf[byrow.rounding], byrow.rounding.digits)
                                                 
-        digits[byrow.rounding] <- digits[byrow.rounding] + 2
     }
     if (is.null(display)) {
         display <- rep("fg", ncol(xvardf))
         display[sapply(xvardf, is.character) | sapply(xvardf, is.factor) ] <- "s"
-        display[byrow.rounding] <- "g"
+        display[byrow.rounding] <- "s"
         display <- c("s", display)
     }
         clabs <- names(xvardf)
